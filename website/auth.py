@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, redirect
+from flask import Blueprint, render_template, request, flash, redirect, session, url_for
 from .models import createUser, findUser
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -12,9 +12,10 @@ def login():
 
         user = findUser(email)
         if user:
-            print(user)
             if check_password_hash(user[-1], password):
+                session['username'] = user[0]
                 flash("Logged In Successfully", category='success')
+                return redirect(url_for('views.home'))
             else:
                 flash("Incorrect password, try again.", category='error')
         else:
@@ -23,7 +24,8 @@ def login():
 
 @auth.route('/logout')
 def logout():
-    return "<p>Logout</p>"
+    session.pop('username', None)
+    return redirect(url_for('auth.login'))
 
 @auth.route('/sign-up', methods=["GET", "POST"])
 def sign_up():
