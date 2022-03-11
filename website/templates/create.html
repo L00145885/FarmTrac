@@ -1,0 +1,25 @@
+{% extends "base.html"%}
+{% block title %}Register Cow Profile{% endblock %}
+{% block content%}
+    <h1>Register Cow Profile</h1>
+    <form method="POST" action="/registerCow" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="herdNumber">Cow ID:</label>
+            <input type="text" class="form-control" id="cowID" name="cowID" placeholder="Enter Cow ID" required value="{{valueCowID}}">
+        </div>
+        <div class="form-group">
+            <label for="name">Breed:</label>
+            <input type="text" class="form-control" id="breed" name="breed" placeholder="Enter Breed" required value="{{valueBreed}}">
+        </div>
+        <div class="form-group">
+            <label for="name">DOB:</label>
+            <input type="date" class="form-control" id="dob" name="dob" placeholder="Enter Date Of Birth" required value="{{valueDOB}}">
+        </div>
+        <div class="form-group">
+            <label for="img">Cow Image:</label><br>
+            <input class="btn btn-secondary" type="file" id="img" name="img" accept="image/*" required value="{{path}}">
+        </div>
+        <br>
+        <button type="submit" class="btn btn-primary">Register Cow To Herd</button>
+    </form>
+{% endblock%}

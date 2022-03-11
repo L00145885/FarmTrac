@@ -14,6 +14,7 @@ def login():
         if user:
             if check_password_hash(user[-1], password):
                 session['username'] = user[0]
+                session['herdNumber'] = user[1]
                 flash("Logged In Successfully", category='success')
                 return redirect(url_for('views.home'))
             else:
