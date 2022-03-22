@@ -21,22 +21,13 @@ class SiameseNetwork(nn.Module):
 		self.sigmoid = nn.Sigmoid()
 	
 	def convs(self, x):
-		# out_dim = in_dim - kernel_size + 1  
-		#1, 105, 105
 		x = F.relu(self.bn1(self.conv1(x)))
-		# 64, 96, 96
 		x = F.max_pool2d(x, (2,2))
-		# 64, 48, 48
 		x = F.relu(self.bn2(self.conv2(x)))
-		# 128, 42, 42
 		x = F.max_pool2d(x, (2,2))
-		# 128, 21, 21
 		x = F.relu(self.bn3(self.conv3(x)))
-		# 128, 18, 18
 		x = F.max_pool2d(x, (2,2))
-		# 128, 9, 9
 		x = F.relu(self.bn4(self.conv4(x)))
-		# 256, 6, 6
 		return x
 
 	def forward(self, x1, x2):

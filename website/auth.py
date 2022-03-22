@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, flash, redirect, session, url_for
-from .models import createUser, findUser
+from .models import createUser, findUser, findUserWithHerd
 from werkzeug.security import generate_password_hash, check_password_hash
 
 auth = Blueprint('auth', __name__)
@@ -38,8 +38,11 @@ def sign_up():
         password2 = request.form.get('password2')
         
         user = findUser(email)
+        herd = findUserWithHerd(herd)
         if user:
             flash("Email already exists", category='error')
+        elif herd:
+            flash("Herd Number already exists", category='error')
         elif len(herdNumber) < 2:
             flash("Herd Number is too short.", category="error")
         elif len(email) < 6:

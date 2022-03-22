@@ -1,0 +1,105 @@
+{% extends "base.html"%}
+<head>
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    {% block head %}
+    {% block title %}Insert Medical Procedures{% endblock %}
+    {% endblock %}
+</head>
+{% block content%}
+<div>
+    <form id="medical-form" action="/saveMedical" method="post">
+        <div id="group1">
+            <label>Type:</label>
+            <select class="form-control" id="Type1" required name="Type1">
+                <option selected value="Dosing">Dosing</option>
+            </select>
+            <label for="desc">Description:</label>
+            <input type="text" id="Desc1" name="Desc1" class="form-control" required>
+            <label for="dateCarriedOut">Date Completed:</label>
+            <input type="date" id="Date1" name="Date1" class="form-control" required>
+            <hr>            
+        </div>
+    </form>
+</div>
+<div>
+    <button id="saveMedical" type="submit" class="btn btn-success" form="medical-form">Save</button>
+    <button class="fa fa-plus btn btn-primary" onclick="extraRow()">Add Additional Procedure</button>
+    <form action="/weights">
+        <button type="submit" class="btn btn-danger" >No Medical Procedures To Add</button>
+    </form>
+</div>
+<script>
+    function extraRow() {
+            //document.getElementById("saveMedical").remove();
+
+            form = document.getElementById("medical-form");
+            totalRows = form.getElementsByTagName("select").length;
+
+            div = document.createElement("div");
+            div.id = "group"+String(totalRows+1);
+
+            deleteBtn = document.createElement("button");
+            deleteBtn.value = "group"+String(totalRows+1);
+            deleteBtn.setAttribute("onclick","deleteRow(this)");
+            deleteBtn.className = "btn btn-danger";
+            deleteBtn.innerHTML = "Delete Row";
+            div.appendChild(deleteBtn);
+
+            lineBreak = document.createElement("br");
+            div.appendChild(lineBreak);
+
+            label = document.createElement("label");
+            label.innerHTML = "Type:";
+            div.appendChild(label);
+
+            select = document.createElement("select");
+            select.id = "Type"+String(totalRows+1);
+            select.name = "Type"+String(totalRows+1);
+            select.required = true;
+            select.options.add(new Option("Dosing", "Dosing"));
+            select.classList.add('form-control');
+            div.appendChild(select);
+
+            label = document.createElement("label");
+            label.innerHTML = "Description: ";
+            div.appendChild(label);
+
+            desc = document.createElement("input");
+            desc.name = "Desc"+String(totalRows+1);
+            desc.id = "Desc"+String(totalRows+1);
+            desc.required = true;
+            desc.classList.add("form-control");
+            div.appendChild(desc);
+
+            label = document.createElement("label");
+            label.innerHTML = "Date Completed:";
+            div.appendChild(label);
+
+            date = document.createElement("input");
+            date.name = "Date"+String(totalRows+1);
+            date.type = "date";
+            date.required = true;
+            date.id = "Date"+String(totalRows+1);
+            date.classList.add("form-control");
+            div.appendChild(date);
+
+            lineBreak = document.createElement("hr");
+            div.appendChild(lineBreak);
+
+            //button = document.createElement("button")
+            //button.id = "saveMedical";
+            //button.type = "submit";
+            //button.className = "btn btn-success";
+            //button.innerHTML = "Save";
+            //div.appendChild(button);
+
+            form.appendChild(div);
+        }
+
+    function deleteRow(element) {
+        console.log(element.value);
+        document.getElementById(element.value).remove();
+    }
+</script>
+{% endblock%}

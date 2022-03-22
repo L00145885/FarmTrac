@@ -1,8 +1,12 @@
 {% extends "base.html"%}
-{% block title %}Register Cow Profile{% endblock %}
+<head>
+    {% block head %}
+    {% block title %}Register Cow Profile{% endblock %}
+    {% endblock %}
+</head>
 {% block content%}
     <h1>Register Cow Profile</h1>
-    <form method="POST" action="/registerCow" enctype="multipart/form-data">
+    <form method="POST" action="/registerCow" enctype="multipart/form-data" id="registerCow">
         <div class="form-group">
             <label for="herdNumber">Cow ID:</label>
             <input type="text" class="form-control" id="cowID" name="cowID" placeholder="Enter Cow ID" required value="{{valueCowID}}">
