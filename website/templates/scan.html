@@ -1,15 +1,10 @@
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" crossorigin="anonymous"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-<script>
-    $(document).ready(function(){
-            $('#Mymodal').modal('show');
-    });
-    </script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" crossorigin="anonymous"></script>
 {% extends "base.html"%}
 {% block title %}Scan{% endblock %}
 {% block content%}
     {% if model %}
-        <div class="modal fade" id="Mymodal" data-backdrop="static" data-keyboard="false">
+        <div class="modal fade" id="myModal" data-backdrop="static" data-keyboard="false">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -33,12 +28,15 @@
                             </div>
                             <div class="form-group">
                                 <label for="herdNumber">Herd Number:</label>
-                                <input type="number" class="form-control" id="herdNumber" name="herdNumber" value="{{data[-1]}}" readonly>
+                                <input type="number" class="form-control" id="herdNumber" name="herdNumber" value="{{data[4]}}" readonly>
                             </div>
                             <button type="submit" class="btn btn-success">Save Changes</button>
                         </form>
+
                     </div> 
                     <div class="modal-footer">
+                        <a data-toggle="modal" href="#weightModal" class="btn btn-primary">View Weights</a>
+                        <a data-toggle="modal" href="#procedureModal" class="btn btn-primary">View Procedures</a>
                         <form action="/scan" method="POST">
                             <button type="submit" class="btn btn-danger">Close</button>
                         </form> 
@@ -56,4 +54,72 @@
             <button type="submit" class="btn btn-primary">Search Databse for Cow</button>
         </form> 
     {% endif %}
+
+    <!-- Procedures Modal -->
+    <div class="modal fade" id="procedureModal" tabindex="-1" aria-labelledby="procedureModal" aria-hidden="true">
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Medical Procedures</h5>
+            </div>
+            <div class="modal-body">
+                <table border="1px solid black">
+                    <tr>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th>Date Carried Out</th>
+                    </tr>
+                    {% for row in returnedDBProcedures %}
+                        <tr>
+                            <td>{{row[1]}}</td>
+                            <td>{{row[2]}}</td>
+                            <td>{{row[3]}}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <div class="modal-footer">
+                <a href="#" data-dismiss="modal" class="btn btn-secondary">Close</a>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- Weights Modal-->
+    <div class="modal fade" id="weightModal" tabindex="-1" aria-labelledby="weightModal" aria-hidden="true">
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Weights</h5>
+            </div>
+            <div class="modal-body">
+                <table border="1px solid black">
+                    <tr>
+                        <th>Weight</th>
+                        <th>Date</th>
+                    </tr>
+                    {% for row in returnedDBWeights %}
+                        <tr>
+                            <td>{{row[1]}}</td>
+                            <td>{{row[2]}}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <div class="modal-footer">
+                <a href="#" data-dismiss="modal" class="btn btn-secondary">Close</a>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $('#myModal').modal({
+                    show: true
+            });
+        });
+    </script>
 {% endblock%}

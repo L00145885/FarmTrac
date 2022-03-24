@@ -19,10 +19,11 @@ db.commit()
 cur.execute("CREATE TABLE IF NOT EXISTS cows (cowID INT(15) PRIMARY KEY, breed VARCHAR(15), dob DATE, img BLOB, herdNumber VARCHAR(15), registeredDate DATE, FOREIGN KEY(herdNumber) REFERENCES users(herdNumber))")
 db.commit()
 
-cur.execute("CREATE TABLE IF NOT EXISTS procedures (type VARCHAR(15), description VARCHAR (45), dateCompleted DATE, cowID INT(15), FOREIGN KEY(cowID) REFERENCES cows(cowID))")
+cur.execute("CREATE TABLE IF NOT EXISTS procedures (procedureID INT(5) PRIMARY KEY AUTO_INCREMENT , type VARCHAR(15), description VARCHAR (45), dateCompleted DATE, cowID INT(15), FOREIGN KEY(cowID) REFERENCES cows(cowID))")
 db.commit()
 
-cur.execute("CREATE TABLE IF NOT EXISTS weights (weight INT(5), dateCompleted DATE, cowID INT(15), FOREIGN KEY(cowID) REFERENCES cows(cowID))")
+cur.execute("CREATE TABLE IF NOT EXISTS weights (weightID INT(5) PRIMARY KEY AUTO_INCREMENT , weight INT(5), dateCompleted DATE, cowID INT(15), herdNumber VARCHAR (15), FOREIGN KEY(cowID) REFERENCES cows(cowID), FOREIGN KEY(herdNumber) REFERENCES users(herdNumber))")
+db.commit() 
 
 def createUser(herdNumberIn, fullNameIn, emailIn, passIn):
     sql = "INSERT INTO users (herdNumber, fullName, email, password) VALUES (%s, %s, %s, %s);"
@@ -63,11 +64,29 @@ def createProcedure(dataIn):
                 cur.execute(sql, (row[2], row[0], row[1], row[3]))
                 db.commit()
 
+def returnProcedures(cowID):
+        query = "SELECT * FROM procedures WHERE cowID = "+cowID+""
+        cur.execute(query)
+        procedures = cur.fetchall()
+        return procedures
+
 def insertWeight(dataIn):
         for row in dataIn:
-                sql = "INSERT INTO weights (weight, dateCompleted, cowID) VALUES (%s, %s, %s);"
-                cur.execute(sql, (row[0], row[1], row[2]))
-                db.commit()   
+                sql = "INSERT INTO weights (weight, dateCompleted, cowID, herdNumber) VALUES (%s, %s, %s, %s);"
+                cur.execute(sql, (row[0], row[1], row[2], row[3]))
+                db.commit() 
+
+def returnWeights(cowID):
+        query = "SELECT * FROM weights WHERE cowID = "+cowID+""
+        cur.execute(query)
+        weights = cur.fetchall()
+        return weights
+
+def returnWeightsFromHerd(herdID):
+        query = "SELECT * FROM weights WHERE herdNumber = "+herdID+""
+        cur.execute(query)
+        weights = cur.fetchall()
+        return weights
                 
 #def totalNumberOfCows(dateIn):
         #sql = "SELECT * FROM cows WHERE registeredDate <= '"+str(dateIn) +"';"

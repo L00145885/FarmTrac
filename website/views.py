@@ -1,11 +1,14 @@
 from PIL import Image
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import torch
+from dateutil. relativedelta import relativedelta
 from datetime import date, timedelta
 from siameseNetwork import SiameseNetwork
-from .models import createCow, createProcedure, editCow, findCow, insertWeight
+from .models import createCow, createProcedure, editCow, findCow, insertWeight, returnProcedures, returnWeights, returnWeightsFromHerd
 import os
 import torch.optim as optim
 import torchvision.transforms as transforms
@@ -17,10 +20,76 @@ views = Blueprint('views', __name__)
 
 today = date.today()
 
-@views.route('/')
+@views.route('/', methods=["GET", "POST"])
 def home():
-	if 'username' in session:
-		return render_template("home.html")
+	data = []
+	totalCows = {"Date": [], "Total Number of Cows": []}
+	if 'username' in session and request.method == 'POST':
+		total = findCow(session['herdNumber'])
+		cowID = request.form.get('selectCow')
+		print(cowID)
+		if len(total) != 0:
+			for cow in total:
+					data.append([cow[0], cow[1], cow[2], cow[4], cow[5]])
+			df = pd.DataFrame(data, columns = ['CowID', 'Breed', 'Date of Birth', 'Herd Number', 'Registered Date'])
+			#Returning Bar Chart based on number of breeds in herd
+			df['Breed'].value_counts().plot(kind="bar")
+			plt.xlabel("Breed", labelpad=14)
+			plt.ylabel("Count of Breed", labelpad=14)
+			plt.title("Number of Cows in Herd Per Breed", y=1.02)
+
+			plt.savefig("website\static\PerBreed.png")
+			plt.clf()
+			#Returning Line Chart of Each cows weight
+			data = []
+			herdWeights = returnWeightsFromHerd(session['herdNumber'])
+			print(herdWeights)
+			for weight in herdWeights:
+				data.append([weight[3], weight[1], weight[2]])
+			weightDF = pd.DataFrame(data, columns=["CowID", "Weight", "Date Weighed"])
+			filterPerCowID = weightDF['CowID'] == int(cowID)
+			print(weightDF[filterPerCowID])
+			plt.plot(weightDF[filterPerCowID]["Date Weighed"], weightDF[filterPerCowID]["Weight"],  linestyle = 'solid')
+			plt.xlabel("Weigh Dates", labelpad=14)
+			plt.ylabel("Weight", labelpad=14)
+			plt.title("Weight of "+str(cowID), y=1.02)
+			plt.savefig("website\static\SpecificWeight.png")
+			plt.clf()
+
+		return render_template("home.html", cows=df['CowID'], showWeight=True, showPerBreed=True)
+	
+	elif 'username' in session:
+		total = findCow(session['herdNumber'])
+		if len(total) != 0:
+			for cow in total:
+					data.append([cow[0], cow[1], cow[2], cow[4], cow[5]])
+			df = pd.DataFrame(data, columns = ['CowID', 'Breed', 'Date of Birth', 'Herd Number', 'Registered Date'])
+			#Returning Bar Chart based on number of breeds in herd
+			df['Breed'].value_counts().plot(kind="bar")
+			plt.xlabel("Breed", labelpad=14)
+			plt.ylabel("Count of Breed", labelpad=14)
+			plt.title("Number of Cows in Herd Per Breed", y=1.02)
+
+			plt.savefig("website\static\PerBreed.png")
+			plt.clf()
+		for i in range(365, -1, -1):
+			retrieveDate = date.today() - timedelta(days=i)
+			totalNumber = len(df[df['Registered Date'] <= retrieveDate])
+			totalCows['Date'].append(str(retrieveDate.strftime('%d/%m/%y')))
+			totalCows["Total Number of Cows"].append(totalNumber)
+		totalCowsDF = pd.DataFrame(totalCows)
+		totalCowsDF['Date'] = pd.to_datetime(totalCowsDF['Date'])
+		monthlyTotalCowsDF = totalCowsDF.resample('M', on='Date').max()
+		lastYearDate = date.today() - relativedelta(years=1)
+		mask = (monthlyTotalCowsDF['Date'].dt.date > lastYearDate) & (monthlyTotalCowsDF['Date'].dt.date <= date.today())
+		pastYearTotalCowsDf = monthlyTotalCowsDF[mask]
+		pastYearTotalCowsDf.plot(x="Date", y="Total Number of Cows")
+		plt.title('Max Total Number of Cows Per Month (Last 365 Days) ', fontsize=14)
+		plt.xlabel('Date', fontsize=14)
+		plt.ylabel('Total Number of Cows', fontsize=14)
+		plt.grid(True)
+		plt.savefig("website\static\PastYear.png")
+		return render_template("home.html", cows=df['CowID'], showPerBreed=True, showPastYear=True)
 	else:
 		return redirect(url_for('auth.login'))
 
@@ -48,7 +117,7 @@ def saveProcedures():
 
 @views.route("/weights", methods=["GET", "POST"])
 def weights():
-    return render_template("weights.html")
+	return render_template("weights.html")
 
 @views.route("/saveWeights", methods=["GET", "POST"])
 def saveWeights():
@@ -59,7 +128,7 @@ def saveWeights():
 			formReturned.append(value)
 		for i in range(len(formReturned)):
   			if i % 2 == 0:
-				  data.append([formReturned[i], formReturned[i-1], session['cowID']])
+				  data.append([formReturned[i], formReturned[i-1], session['cowID'], session['herdNumber']])
 		insertWeight(data)
 	flash("Cow Profile Created and Inserted", category='success')
 	return redirect(url_for('views.register'))
@@ -118,7 +187,9 @@ def searchDatabase():
 				nparr = np.fromstring(cow[3], np.uint8)
 				img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 				cv2.imwrite("website/static/dbReturned.JPG", img_np)
-				return render_template("scan.html", data=cow, model=True)			
+				procedures = returnProcedures(str(cow[0]))
+				weights = returnWeights(str(cow[0]))
+				return render_template("scan.html", data=cow, model=True, returnedDBProcedures=procedures, returnedDBWeights=weights)			
 	return render_template("scan.html")
 
 @views.route('/editCow', methods=["GET", "POST"])
