@@ -38,7 +38,7 @@ def sign_up():
         password2 = request.form.get('password2')
         
         user = findUser(email)
-        herd = findUserWithHerd(herd)
+        herd = findUserWithHerd(herdNumber)
         if user:
             flash("Email already exists", category='error')
         elif herd:

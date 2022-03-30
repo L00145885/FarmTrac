@@ -8,7 +8,7 @@ import torch
 from dateutil. relativedelta import relativedelta
 from datetime import date, timedelta
 from siameseNetwork import SiameseNetwork
-from .models import createCow, createProcedure, editCow, findCow, insertWeight, returnProcedures, returnWeights, returnWeightsFromHerd
+from .models import createCow, createProcedure, deleteCowProcedure, deleteCowWeight, editCow, editCowWeights, editProcedures, findCow, insertWeight, returnProcedures, returnWeights, returnWeightsFromHerd
 import os
 import torch.optim as optim
 import torchvision.transforms as transforms
@@ -175,22 +175,86 @@ def searchDatabase():
 	uploadedImage = transformation(img)
 	for cow in cowsInHerd:
 		dbImage = transformImage(cow[3])
-		load_model = SiameseNetwork().cpu()
+		load_model = SiameseNetwork().cuda()
 		load_optimizer = optim.Adam(load_model.parameters(), lr=0.0006)
 		load_checkpoint('Differentmodel.pth',load_model, load_optimizer)
 		with torch.no_grad():
 			load_model.eval()
-			output = load_model(uploadedImage[None, ...], dbImage[None, ...])
+			output = load_model(uploadedImage[None, ...].cuda(), dbImage[None, ...].cuda())
 			print(output)
-			os.remove(savePath)
 			if output.item() < 0.5:
 				nparr = np.fromstring(cow[3], np.uint8)
 				img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 				cv2.imwrite("website/static/dbReturned.JPG", img_np)
 				procedures = returnProcedures(str(cow[0]))
 				weights = returnWeights(str(cow[0]))
-				return render_template("scan.html", data=cow, model=True, returnedDBProcedures=procedures, returnedDBWeights=weights)			
+				return render_template("scan.html", data=cow, model=True, returnedDBProcedures=procedures, returnedDBWeights=weights)	
+	flash("No cows recognised in the DB", category='error')		
 	return render_template("scan.html")
+
+@views.route("/saveEditWeights", methods=["GET","POST"])
+def saveEditedWeights():
+	if request.method == 'POST':
+		data = []
+		numberOfRows = int(len(request.form)/3)
+		for i in range(numberOfRows):
+			weightID = request.form.get("weightID"+str(i+1))
+			weight = request.form.get("weight"+str(i+1))
+			date = request.form.get("date"+str(i+1))
+			data.append([weightID, weight, date])
+		editCowWeights(data)
+		return "OK"
+
+@views.route("/insertNewWeight", methods=["GET","POST"])
+def insertNewWeight():
+	if request.method == 'POST':
+		data = []
+		weight = request.form.get("Weight1")
+		date = request.form.get("Date1")
+		cowID = request.form.get("insertWeight-CowID")
+		herdNumber = request.form.get("insertWeight-HerdNumber")
+	data.append([weight, date, cowID, herdNumber])
+	insertWeight(data)
+	return "OK"
+
+@views.route("/deleteWeight", methods=["GET","POST"])
+def deleteWeight():
+	if request.method == 'POST':
+		weightID = request.form.get('weightID')
+	deleteCowWeight(weightID)
+	return "OK"
+
+@views.route("saveEditProcedures", methods=["GET","POST"])
+def saveEditedProcedures():
+	if request.method == 'POST':
+		data = []
+		numberOfRows = int(len(request.form)/4)
+		for i in range(numberOfRows):
+			procedureID = request.form.get("procedureID"+str(i+1))
+			type = request.form.get("type"+str(i+1))
+			description = request.form.get("description"+str(i+1))
+			date = request.form.get("date"+str(i+1))
+			data.append([procedureID, type, description, date])
+		editProcedures(data)
+		return "OK"
+
+@views.route("/insertNewProcedure", methods=["GET","POST"])
+def insertNewProcedure():
+	if request.method == 'POST':
+		data = []
+		type = request.form.get("Type1")
+		desc = request.form.get("Desc1")
+		date = request.form.get("Date1")
+		cowID = request.form.get("insertWeight-CowID")
+	data.append([desc, date, type, cowID])
+	createProcedure(data)
+	return "OK"
+@views.route("/deleteProcedure", methods=["GET","POST"])
+def deleteProcedure():
+	if request.method == 'POST':
+		procedureID = request.form.get('deleteProcedure-ID')
+	deleteCowProcedure(procedureID)
+	return "OK"
 
 @views.route('/editCow', methods=["GET", "POST"])
 def edit():

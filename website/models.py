@@ -37,7 +37,7 @@ def findUser(emailIn):
     return user
 
 def findUserWithHerd(herdIn):
-    query = "SELECT * FROM users WHERE herdNumber = "+herdIn+""
+    query = "SELECT * FROM users WHERE herdNumber = '"+herdIn+"'"
     cur.execute(query)
     user = cur.fetchone()
     return user
@@ -48,7 +48,7 @@ def createCow(cowIDIn, breedIn, dobIn, imgIn, herdIn, dateIn):
         db.commit()
         
 def findCow(herdIn):
-        query = "SELECT * FROM cows WHERE herdNumber = "+herdIn+""
+        query = "SELECT * FROM cows WHERE herdNumber = '"+herdIn+"'"
         cur.execute(query)
         cow = cur.fetchall()
         return cow
@@ -64,6 +64,17 @@ def createProcedure(dataIn):
                 cur.execute(sql, (row[2], row[0], row[1], row[3]))
                 db.commit()
 
+def editProcedures(dataIn):
+        for row in dataIn:
+                sql = """UPDATE procedures SET type=%s, description =%s, dateCompleted=%s WHERE procedureID = %s"""
+                cur.execute(sql, (row[1], row[2], row[3], row[0]))
+                db.commit()
+
+def deleteCowProcedure(procedureID):
+        sql = "DELETE FROM procedures WHERE procedureID = "+procedureID+""
+        cur.execute(sql)
+        db.commit()
+
 def returnProcedures(cowID):
         query = "SELECT * FROM procedures WHERE cowID = "+cowID+""
         cur.execute(query)
@@ -75,6 +86,17 @@ def insertWeight(dataIn):
                 sql = "INSERT INTO weights (weight, dateCompleted, cowID, herdNumber) VALUES (%s, %s, %s, %s);"
                 cur.execute(sql, (row[0], row[1], row[2], row[3]))
                 db.commit() 
+
+def editCowWeights(dataIn):
+        for row in dataIn:
+                sql = """UPDATE weights SET weight=%s, dateCompleted=%s WHERE weightID = %s"""
+                cur.execute(sql, (row[1], row[2], row[0]))
+                db.commit()
+
+def deleteCowWeight(weightIDIn):
+        sql = "DELETE FROM weights WHERE weightID = "+weightIDIn+""
+        cur.execute(sql)
+        db.commit()
 
 def returnWeights(cowID):
         query = "SELECT * FROM weights WHERE cowID = "+cowID+""

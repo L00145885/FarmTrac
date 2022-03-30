@@ -1,5 +1,7 @@
+<head>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" crossorigin="anonymous"></script>
+</head>
 {% extends "base.html"%}
 {% block title %}Scan{% endblock %}
 {% block content%}
@@ -28,7 +30,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="herdNumber">Herd Number:</label>
-                                <input type="number" class="form-control" id="herdNumber" name="herdNumber" value="{{data[4]}}" readonly>
+                                <input type="text" class="form-control" id="herdNumber" name="herdNumber" value="{{data[4]}}" readonly>
                             </div>
                             <button type="submit" class="btn btn-success">Save Changes</button>
                         </form>
@@ -56,70 +58,265 @@
     {% endif %}
 
     <!-- Procedures Modal -->
-    <div class="modal fade" id="procedureModal" tabindex="-1" aria-labelledby="procedureModal" aria-hidden="true">
+    <div style="background: rgba(0,0,0,0.6);" class="modal fade" id="procedureModal" tabindex="-1" aria-labelledby="procedureModal" aria-hidden="true">
         <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel">Medical Procedures</h5>
             </div>
             <div class="modal-body">
-                <table border="1px solid black">
-                    <tr>
+                <form action="/saveEditProcedures" method="post" id="editProceduresForm">
+                    <table>
+                      <tr>
                         <th>Type</th>
                         <th>Description</th>
                         <th>Date Carried Out</th>
-                    </tr>
-                    {% for row in returnedDBProcedures %}
-                        <tr>
-                            <td>{{row[1]}}</td>
-                            <td>{{row[2]}}</td>
-                            <td>{{row[3]}}</td>
-                        </tr>
-                    {% endfor %}
-                </table>
+                        <th>Option</th>
+                      </tr>
+                        {% for row in returnedDBProcedures %}
+                            <tr>
+                                <input type='number' id="procedureID{{ loop.index }}" name="procedureID{{ loop.index }}" value="{{row[0]}}" hidden>
+                                <td>
+                                    <select id="type{{ loop.index }}" name="type{{ loop.index }}" required>
+                                        <option selected value="Dosing">Dosing</option>
+                                    </select>
+                                </td>
+                                <td><input type='text' id="description{{ loop.index}}" name="description{{ loop.index}}" value="{{row[2]}}"></td>
+                                <td><input type='date' id="procedure-date{{ loop.index}}" name="date{{ loop.index}}" value="{{row[3]}}"></td>
+                                <td><button class="btn btn-danger" onclick="deleteProcedure(this)" value="{{loop.index}}" type="button">Delete Procedure</button></td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </form>
             </div>
             <div class="modal-footer">
                 <a href="#" data-dismiss="modal" class="btn btn-secondary">Close</a>
-                <button type="button" class="btn btn-primary">Save changes</button>
+                <a data-toggle="modal" class="btn btn-success" onclick="displayInsertProcedureModal()">Add Procedure</a>
+                <input type="button" class="btn btn-primary" value="Save changes" onclick="saveProceduresEdited()"/>
             </div>
         </div>
+        </div>
+    </div>
+
+    <!-- Add New Procedure-->
+    <div style="background: rgba(0,0,0,0.7);" class="modal fade" id="newProcedureModal" aria-labelledby="newProcedureModal" aria-hidden="true" data-backdrop="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Insert New Procedure</h5>
+                </div>
+                <div class="modal-body">
+                    <form action="/insertNewProcedure" method="post" id="insertNewProcedureForm">
+                        <input type="number" name="insertProcedure-CowID" id="insertProcedure-CowID" hidden value="">
+                        <input type="text" name="insertProcedure-HerdNumber" id="insertProcedure-HerdNumber" hidden value="">
+                        <label>Type:</label>
+                        <select class="form-control" id="Type1" required name="Type1">
+                            <option selected value="Dosing">Dosing</option>
+                        </select>
+                        <label for="desc">Description:</label>
+                        <input type="text" id="Desc1" name="Desc1" class="form-control" required>
+                        <label for="dateCarriedOut">Date Completed:</label>
+                        <input type="date" id="Date1" name="Date1" class="form-control" required>          
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" data-dismiss="modal" class="btn btn-secondary">Close</a>
+                    <input type="submit" class="btn btn-success" value="Insert Procedure" form="insertNewProcedureForm"/>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Procedures Modal-->
+    <div style="background: rgba(0,0,0,0.7);" class="modal fade" id="deleteProcedureModal" aria-labelledby="deleteProcedureModal" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Delete Procedure</h5>
+                </div>
+                <div class="modal-body">
+                    <form action="/deleteProcedure" method="post" id="deleteProcedureForm">
+                        <div>
+                            <input hidden id="deleteProcedure-ID" name="deleteProcedure-ID">
+                            <label>Type:</label>
+                            <select class="form-control" id="DeleteProcedure-Type" name="DeleteProcedure-Type">
+                                <option selected value="Dosing">Dosing</option>
+                            </select>
+                            <label for="desc">Description:</label>
+                            <input type="text" id="deleteProcedure-Desc" name="deleteProcedure-Desc" class="form-control" readonly value="">
+                            <label for="dateCarriedOut">Date Completed:</label>
+                            <input type="date" id="deleteProcedure-Date" name="deleteProcedure-Date" class="form-control" readonly value="">
+                            <hr>            
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" data-dismiss="modal" class="btn btn-secondary">Close</a>
+                    <input type="submit" form="deleteProcedureForm" class="btn btn-danger" value="Confirm Delete!"/>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Weights Modal-->
-    <div class="modal fade" id="weightModal" tabindex="-1" aria-labelledby="weightModal" aria-hidden="true">
+    <div style="background: rgba(0,0,0,0.6);" class="modal fade" id="weightModal" tabindex="-1" aria-labelledby="weightModal" aria-hidden="true">
         <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Weights</h5>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Weights</h5>
+                </div>
+                <div class="modal-body">
+                    <form action="/saveEditWeights" method="post" id="editWeightsForm">
+                        <table>
+                          <tr>
+                            <th>Weight</th>
+                            <th>Date</th>
+                            <th>Option</th>
+                          </tr>
+                            {% for row in returnedDBWeights %}
+                                <tr id="row{{loop.index}}">
+                                    <input type='number' id="weightID{{ loop.index }}" name="weightID{{ loop.index }}" value="{{row[0]}}" hidden>
+                                    <td><input type='number' id="weight{{ loop.index }}" name="weight{{ loop.index }}" value="{{row[1]}}"> </td>
+                                    <td><input type='date' id="date{{ loop.index}}" name="date{{ loop.index}}" value="{{row[2]}}"> </td>
+                                    <td><button class="btn btn-danger" onclick="deleteWeight(this)" value="{{loop.index}}" type="button">Delete Weight</button></td>
+                            {% endfor %}
+                        </table>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" data-dismiss="modal" class="btn btn-secondary">Close</a>
+                    <a data-toggle="modal" class="btn btn-success" onclick="displayInsertWeightModal()">Add New Weight</a>
+                    <input type="button" class="btn btn-primary" value="Save changes" onclick="saveWeightsEdited()"/>
+                </div>
             </div>
-            <div class="modal-body">
-                <table border="1px solid black">
-                    <tr>
-                        <th>Weight</th>
-                        <th>Date</th>
-                    </tr>
-                    {% for row in returnedDBWeights %}
-                        <tr>
-                            <td>{{row[1]}}</td>
-                            <td>{{row[2]}}</td>
-                        </tr>
-                    {% endfor %}
-                </table>
-            </div>
-            <div class="modal-footer">
-                <a href="#" data-dismiss="modal" class="btn btn-secondary">Close</a>
-                <button type="button" class="btn btn-primary">Save changes</button>
-            </div>
-        </div>
         </div>
     </div>
 
+    <!-- Add New Weight-->
+    <div style="background: rgba(0,0,0,0.7);" class="modal fade" id="newWeightModal" aria-labelledby="newWeightModal" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Insert New Weight</h5>
+                </div>
+                <div class="modal-body" data-bs-focus="false">
+                    <form action="/insertNewWeight" method="post" id="insertNewWeightForm">
+                        <input type="number" name="insertWeight-CowID" id="insertWeight-CowID" hidden value="">
+                        <input type="text" name="insertWeight-HerdNumber" id="insertWeight-HerdNumber" hidden value="">
+                        <label for="Weight1">Weight:</label>
+                        <input type="number" id="Weight1" name="Weight1" required class="form-control">
+                        <label for="Date1">Date Completed:</label>
+                        <input type="date" id="Date1" name="Date1" required class="form-control">           
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" data-dismiss="modal" class="btn btn-secondary">Close</a>
+                    <input type="submit" class="btn btn-success" value="Insert Weight" form="insertNewWeightForm"/>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Weights Modal-->
+    <div style="background: rgba(0,0,0,0.7);" class="modal fade" id="deleteWeightModal" aria-labelledby="deleteWeightModal" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Delete Weight</h5>
+                </div>
+                <div class="modal-body">
+                    <form action="/deleteWeight" method="post" id="deleteWeightForm">
+                        <div>
+                            <input hidden value="" id="deleteWeight-WeightID" name="weightID">
+                            <label for="weight">Weight:</label>
+                            <input type="number" id="deleteWeight-Weight" name="Weight" class="form-control" readonly value="">
+                            <label for="dateCarriedOut">Date Completed:</label>
+                            <input type="date" id="deleteWeight-Date" name="Date" class="form-control" readonly value="">
+                            <hr>            
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" data-dismiss="modal" class="btn btn-secondary">Close</a>
+                    <input type="submit" form="deleteWeightForm" class="btn btn-danger" value="Confirm Delete!"/>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
     <script>
         $(document).ready(function () {
-            $('#myModal').modal({
-                    show: true
-            });
+            $.fn.modal.Constructor.prototype.enforceFocus = function () {};
+            $('#myModal').modal('show');
         });
+        function saveWeightsEdited() {
+            document.getElementById("editWeightsForm").submit();
+        }
+
+        function saveProceduresEdited(){
+            document.getElementById("editProceduresForm").submit();
+        }
+
+        function displayInsertWeightModal() {
+            cowID = document.getElementById("cowID").value;
+            document.getElementById("insertWeight-CowID").value = cowID;
+
+            herdNumber = document.getElementById("herdNumber").value;
+            document.getElementById("insertWeight-HerdNumber").value = herdNumber;
+
+            $(document).ready(function () {
+                $('#newWeightModal').modal('show');
+            });
+
+            document.getElementById("Weight1").focus();
+        }
+        
+        function displayInsertProcedureModal() {
+            cowID = document.getElementById("cowID").value;
+            document.getElementById("insertProcedure-CowID").value = cowID;
+
+            herdNumber = document.getElementById("herdNumber").value;
+            document.getElementById("insertProcedure-HerdNumber").value = herdNumber;
+
+            $(document).ready(function () {
+                $('#newProcedureModal').modal('show');
+            });
+        }
+
+        function deleteWeight(button) {
+            weightId = document.getElementById("weightID"+button.value).value;
+            document.getElementById("deleteWeight-WeightID").value = weightId;
+
+            weight = document.getElementById("weight"+button.value).value;
+            document.getElementById("deleteWeight-Weight").value = weight;
+
+            date = document.getElementById("date"+button.value).value;
+            document.getElementById("deleteWeight-Date").value = date;
+
+            console.log(document.getElementById("deleteWeight-Date").value);
+
+            $(document).ready(function () {
+                $('#deleteWeightModal').modal('show');
+            });
+        }
+
+        function deleteProcedure(button) {
+            procedureId = document.getElementById("procedureID"+button.value).value;
+            document.getElementById("deleteProcedure-ID").value = procedureId;
+
+            //type = document.getElementById("type"+button.value).value;
+            //document.getElementById("deleteProcedure-Type").value = type;
+
+            desc = document.getElementById("description"+button.value).value;
+            document.getElementById("deleteProcedure-Desc").value = desc;
+
+            date = document.getElementById("procedure-date"+button.value).value;
+            document.getElementById("deleteProcedure-Date").value = date;
+
+            $(document).ready(function () {
+                $('#deleteProcedureModal').modal('show');
+            });
+        }
     </script>
-{% endblock%}
+{% endblock %}
