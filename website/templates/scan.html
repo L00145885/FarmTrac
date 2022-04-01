@@ -7,7 +7,7 @@
 <body>
 {% block content%}
     {% if model %}
-        <div class="modal fade" id="myModal" data-backdrop="static" data-keyboard="false">
+    <div class="modal fade" id="myModal" data-backdrop="static" data-keyboard="false">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -46,7 +46,7 @@
                     </div>                               
                 </div>                                                                       
             </div>                                          
-        </div>   
+    </div>   
     {% else %}
         <h1>Scan Cow</h1>
         <form method="POST" action="/scanCow" enctype="multipart/form-data">
@@ -59,57 +59,56 @@
     {% endif %}
 
     <!-- Procedures Modal -->
-    <div style="background: rgba(0,0,0,0.6);" class="modal fade" id="procedureModal" tabindex="-1" aria-labelledby="procedureModal" aria-hidden="true">
+    <div style="background: rgba(0,0,0,0.9);" class="modal fade" id="procedureModal" aria-labelledby="procedureModal" aria-hidden="true">
         <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Medical Procedures</h5>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Medical Procedures</h5>
+                </div>
+                <div class="modal-body">
+                    <form action="/saveEditProcedures" method="post" id="editProceduresForm">
+                        <table>
+                        <tr>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Date Carried Out</th>
+                            <th>Option</th>
+                        </tr>
+                            {% for row in returnedDBProcedures %}
+                                <tr>
+                                    <input type='number' id="procedureID{{ loop.index }}" name="procedureID{{ loop.index }}" value="{{row[0]}}" hidden>
+                                    <td>
+                                        <select id="type{{ loop.index }}" name="type{{ loop.index }}" required>
+                                            <option selected value="Dosing">Dosing</option>
+                                        </select>
+                                    </td>
+                                    <td><input type='text' id="description{{ loop.index}}" name="description{{ loop.index}}" value="{{row[2]}}"></td>
+                                    <td><input type='date' id="procedure-date{{ loop.index}}" name="date{{ loop.index}}" value="{{row[3]}}"></td>
+                                    <td><button class="btn btn-danger" onclick="deleteProcedure(this)" value="{{loop.index}}" type="button">Delete Procedure</button></td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" data-dismiss="modal" class="btn btn-secondary">Close</a>
+                    <a data-toggle="modal" class="btn btn-success" onclick="displayInsertProcedureModal()">Add Procedure</a>
+                    <input type="button" class="btn btn-primary" value="Save changes" onclick="saveProceduresEdited()"/>
+                </div>
             </div>
-            <div class="modal-body">
-                <form action="/saveEditProcedures" method="post" id="editProceduresForm">
-                    <table>
-                      <tr>
-                        <th>Type</th>
-                        <th>Description</th>
-                        <th>Date Carried Out</th>
-                        <th>Option</th>
-                      </tr>
-                        {% for row in returnedDBProcedures %}
-                            <tr>
-                                <input type='number' id="procedureID{{ loop.index }}" name="procedureID{{ loop.index }}" value="{{row[0]}}" hidden>
-                                <td>
-                                    <select id="type{{ loop.index }}" name="type{{ loop.index }}" required>
-                                        <option selected value="Dosing">Dosing</option>
-                                    </select>
-                                </td>
-                                <td><input type='text' id="description{{ loop.index}}" name="description{{ loop.index}}" value="{{row[2]}}"></td>
-                                <td><input type='date' id="procedure-date{{ loop.index}}" name="date{{ loop.index}}" value="{{row[3]}}"></td>
-                                <td><button class="btn btn-danger" onclick="deleteProcedure(this)" value="{{loop.index}}" type="button">Delete Procedure</button></td>
-                            </tr>
-                        {% endfor %}
-                    </table>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <a href="#" data-dismiss="modal" class="btn btn-secondary">Close</a>
-                <a data-toggle="modal" class="btn btn-success" onclick="displayInsertProcedureModal()">Add Procedure</a>
-                <input type="button" class="btn btn-primary" value="Save changes" onclick="saveProceduresEdited()"/>
-            </div>
-        </div>
         </div>
     </div>
 
     <!-- Add New Procedure-->
-    <div style="background: rgba(0,0,0,0.7);" class="modal fade" id="newProcedureModal" aria-labelledby="newProcedureModal" aria-hidden="true">
-        <div class="modal-dialog">
+    <div style="background: rgba(0,0,0,0.9);" class="modal fade" id="newProcedureModal" aria-labelledby="newProcedureModal" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Insert New Procedure</h5>
                 </div>
                 <div class="modal-body">
                     <form action="/insertNewProcedure" method="post" id="insertNewProcedureForm">
-                        <input type="number" name="insertProcedure-CowID" id="insertProcedure-CowID" hidden value="">
-                        <input type="text" name="insertProcedure-HerdNumber" id="insertProcedure-HerdNumber" hidden value="">
+                        <input type="number" name="insertProcedure-CowID" id="insertProcedure-CowID" hidden>
                         <label>Type:</label>
                         <select class="form-control" id="Type1" required name="Type1">
                             <option selected value="Dosing">Dosing</option>
@@ -160,7 +159,7 @@
     </div>
 
     <!-- Weights Modal-->
-    <div style="background: rgba(0,0,0,0.6);" class="modal fade" id="weightModal" tabindex="-1" aria-labelledby="weightModal" aria-hidden="true">
+    <div style="background: rgba(0,0,0,0.6);" class="modal fade" id="weightModal" aria-labelledby="weightModal" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -194,16 +193,16 @@
     </div>
 
     <!-- Add New Weight-->
-    <div style="background: rgba(0,0,0,0.7);" class="modal fade" id="newWeightModal" aria-labelledby="newWeightModal" aria-hidden="true">
-        <div class="modal-dialog">
+    <div style="background: rgba(0,0,0,0.9);" class="modal fade" id="newWeightModal" aria-labelledby="newWeightModal" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Insert New Weight</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Weights</h5>
                 </div>
-                <div class="modal-body" data-bs-focus="false">
+                <div class="modal-body">
                     <form action="/insertNewWeight" method="post" id="insertNewWeightForm">
-                        <input type="number" name="insertWeight-CowID" id="insertWeight-CowID" hidden value="">
-                        <input type="text" name="insertWeight-HerdNumber" id="insertWeight-HerdNumber" hidden value="">
+                        <input type="number" name="insertWeight-CowID" id="insertWeight-CowID" hidden>
+                        <input type="text" name="insertWeight-HerdNumber" id="insertWeight-HerdNumber" hidden>
                         <label for="Weight1">Weight:</label>
                         <input type="number" id="Weight1" name="Weight1" required class="form-control">
                         <label for="Date1">Date Completed:</label>
@@ -244,12 +243,9 @@
             </div>
         </div>
     </div>
-
-    </div>
 </body>
     <script>
         $(document).ready(function () {
-            $.fn.modal.Constructor.prototype.enforceFocus = function () {};
             $('#myModal').modal('show');
         });
         function saveWeightsEdited() {
@@ -271,15 +267,11 @@
                 $('#newWeightModal').modal('show');
             });
 
-            document.getElementById("Weight1").focus();
         }
         
         function displayInsertProcedureModal() {
             cowID = document.getElementById("cowID").value;
             document.getElementById("insertProcedure-CowID").value = cowID;
-
-            herdNumber = document.getElementById("herdNumber").value;
-            document.getElementById("insertProcedure-HerdNumber").value = herdNumber;
 
             $(document).ready(function () {
                 $('#newProcedureModal').modal('show');

@@ -209,6 +209,7 @@ def saveEditedWeights():
 def insertNewWeight():
 	if request.method == 'POST':
 		data = []
+		print(request.form)
 		weight = request.form.get("Weight1")
 		date = request.form.get("Date1")
 		cowID = request.form.get("insertWeight-CowID")
@@ -245,7 +246,7 @@ def insertNewProcedure():
 		type = request.form.get("Type1")
 		desc = request.form.get("Desc1")
 		date = request.form.get("Date1")
-		cowID = request.form.get("insertWeight-CowID")
+		cowID = request.form.get("insertProcedure-CowID")
 	data.append([desc, date, type, cowID])
 	createProcedure(data)
 	return "OK"
