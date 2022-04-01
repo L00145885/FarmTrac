@@ -4,6 +4,7 @@
 </head>
 {% extends "base.html"%}
 {% block title %}Scan{% endblock %}
+<body>
 {% block content%}
     {% if model %}
         <div class="modal fade" id="myModal" data-backdrop="static" data-keyboard="false">
@@ -59,7 +60,7 @@
 
     <!-- Procedures Modal -->
     <div style="background: rgba(0,0,0,0.6);" class="modal fade" id="procedureModal" tabindex="-1" aria-labelledby="procedureModal" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel">Medical Procedures</h5>
@@ -99,7 +100,7 @@
     </div>
 
     <!-- Add New Procedure-->
-    <div style="background: rgba(0,0,0,0.7);" class="modal fade" id="newProcedureModal" aria-labelledby="newProcedureModal" aria-hidden="true" data-backdrop="false">
+    <div style="background: rgba(0,0,0,0.7);" class="modal fade" id="newProcedureModal" aria-labelledby="newProcedureModal" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -245,6 +246,7 @@
     </div>
 
     </div>
+</body>
     <script>
         $(document).ready(function () {
             $.fn.modal.Constructor.prototype.enforceFocus = function () {};

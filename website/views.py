@@ -175,12 +175,12 @@ def searchDatabase():
 	uploadedImage = transformation(img)
 	for cow in cowsInHerd:
 		dbImage = transformImage(cow[3])
-		load_model = SiameseNetwork().cpu()
+		load_model = SiameseNetwork().cuda()
 		load_optimizer = optim.Adam(load_model.parameters(), lr=0.0006)
 		load_checkpoint('Differentmodel.pth',load_model, load_optimizer)
 		with torch.no_grad():
 			load_model.eval()
-			output = load_model(uploadedImage[None, ...], dbImage[None, ...])
+			output = load_model(uploadedImage[None, ...].cuda(), dbImage[None, ...].cuda())
 			print(output)
 			if output.item() < 0.5:
 				nparr = np.fromstring(cow[3], np.uint8)
@@ -249,6 +249,7 @@ def insertNewProcedure():
 	data.append([desc, date, type, cowID])
 	createProcedure(data)
 	return "OK"
+
 @views.route("/deleteProcedure", methods=["GET","POST"])
 def deleteProcedure():
 	if request.method == 'POST':
