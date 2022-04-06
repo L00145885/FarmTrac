@@ -4,7 +4,6 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-np.random.BitGenerator = np.random.bit_generator.BitGenerator
 import torch
 from dateutil. relativedelta import relativedelta
 from datetime import date, timedelta
