@@ -22,12 +22,12 @@ jobs:
       - name: Checkout the files
         uses: actions/checkout@v3
 
-      - name: Install SSH key
-        uses: shimataro/ssh-key-action@v2
+      - name: rsync deployments
+        uses: burnett01/rsync-deployments@5.1
         with:
-          key: ${{ secrets.AWS_PRIVATE_KEY }}
-          known_hosts: 'just-a-placeholder-so-we-dont-get-errors'
-      - name: Adding Known Hosts
-        run: ssh-keyscan -H ${{ secrets.HOSTNAME }} >> ~/.ssh/known_hosts
-      - name: Deploy with rsync
-        run: rsync -avz ./ ${{ secrets.USERNAME }}@${{ secrets.HOSTNAME }}:/home/ubuntu
+          switches: -avzr --delete
+          path: ./*
+          remote_path: ~/deployedApp
+          remote_host: ec2-54-74-194-122.eu-west-1.compute.amazonaws.com
+          remote_user: ubuntu
+          remote_key: "${{ secrets.AWS_PRIVATE_KEY }}"
