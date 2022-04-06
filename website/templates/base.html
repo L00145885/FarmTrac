@@ -1,5 +1,11 @@
 <!DOCTYPE html>
 <html>
+    <style>
+        /* Right-aligned section inside the top navigation */
+        .topnav-right {
+            float: right;
+        }
+    </style>
     <head>
         <meta charset="utf-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -30,6 +36,9 @@
                     <a class="nav-item nav-link" id="create" href="/create">Register Cow Profile</a>
                     <a class="nav-item nav-link" id="scan" href="/scan">Scan Cow</a>
                     <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
+                    <div class="topnav-right">
+                        <a class="nav-item nav-link" href="/account">My Account</a>
+                    </div>
                     {% else %}
                     <a class="nav-item nav-link" id="login" href="/login">Login</a>
                     <a class="nav-item nav-link" id="signUp" href="/sign-up">Sign Up</a>

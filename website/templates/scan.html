@@ -40,8 +40,9 @@
                     <div class="modal-footer">
                         <a data-toggle="modal" href="#weightModal" class="btn btn-primary">View Weights</a>
                         <a data-toggle="modal" href="#procedureModal" class="btn btn-primary">View Procedures</a>
+                        <a data-toggle="modal" onclick="displayDeleteCowModal()" class="btn btn-danger">Delete Cow</a>
                         <form action="/scan" method="POST">
-                            <button type="submit" class="btn btn-danger">Close</button>
+                            <button type="submit" class="btn btn-secondary">Close</button>
                         </form> 
                     </div>                               
                 </div>                                                                       
@@ -54,7 +55,7 @@
                 <label for="img">Cow Image:</label><br>
                 <input class="btn btn-secondary" type="file" id="img" name="img" accept="image/*" required value="{{path}}">
             </div>
-            <button type="submit" class="btn btn-primary">Search Databse for Cow</button>
+            <button type="submit" class="btn btn-primary">Search Database for Cow</button>
         </form> 
     {% endif %}
 
@@ -66,6 +67,7 @@
                     <h5 class="modal-title" id="exampleModalLabel">Medical Procedures</h5>
                 </div>
                 <div class="modal-body">
+                    {% if returnedDBProcedures|length > 0 %}
                     <form action="/saveEditProcedures" method="post" id="editProceduresForm">
                         <table>
                         <tr>
@@ -89,11 +91,16 @@
                             {% endfor %}
                         </table>
                     </form>
+                    {% else %}
+                    <p><b>No Medical Procedures recorded for this cow</b></p>
+                    {% endif %}
                 </div>
                 <div class="modal-footer">
                     <a href="#" data-dismiss="modal" class="btn btn-secondary">Close</a>
                     <a data-toggle="modal" class="btn btn-success" onclick="displayInsertProcedureModal()">Add Procedure</a>
+                    {% if returnedDBProcedures|length > 0 %}
                     <input type="button" class="btn btn-primary" value="Save changes" onclick="saveProceduresEdited()"/>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -101,7 +108,7 @@
 
     <!-- Add New Procedure-->
     <div style="background: rgba(0,0,0,0.9);" class="modal fade" id="newProcedureModal" aria-labelledby="newProcedureModal" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Insert New Procedure</h5>
@@ -166,6 +173,7 @@
                     <h5 class="modal-title" id="exampleModalLabel">Weights</h5>
                 </div>
                 <div class="modal-body">
+                    {% if returnedDBWeights|length > 0 %}
                     <form action="/saveEditWeights" method="post" id="editWeightsForm">
                         <table>
                           <tr>
@@ -182,11 +190,16 @@
                             {% endfor %}
                         </table>
                     </form>
+                    {% else %}
+                    <p><b>No Weights recorded for this cow</b></p>
+                    {% endif %}
                 </div>
                 <div class="modal-footer">
                     <a href="#" data-dismiss="modal" class="btn btn-secondary">Close</a>
                     <a data-toggle="modal" class="btn btn-success" onclick="displayInsertWeightModal()">Add New Weight</a>
+                    {% if returnedDBWeights|length > 0 %}
                     <input type="button" class="btn btn-primary" value="Save changes" onclick="saveWeightsEdited()"/>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -194,7 +207,7 @@
 
     <!-- Add New Weight-->
     <div style="background: rgba(0,0,0,0.9);" class="modal fade" id="newWeightModal" aria-labelledby="newWeightModal" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Weights</h5>
@@ -243,11 +256,52 @@
             </div>
         </div>
     </div>
+
+    <!-- Delete Cow -->
+    <div style="background: rgba(0,0,0,0.9);" class="modal fade" id="deleteCowModal" aria-labelledby="deleteCowModal" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Delete Cow</h5>
+                </div>
+                <div class="modal-body">
+                    <form action="/deleteCow" method="post" id="deleteCowForm">
+                        <label>Cow ID:</label>
+                        <input type="number" id="deleteCow-ID" name="deleteCow-ID" readonly class="form-control">    
+                        <label>Breed:</label>   
+                        <input type="text" id="deleteCow-Breed" readonly class="form-control">
+                        <label>DOB:</label>  
+                        <input type="date" id="deleteCow-DOB" readonly class="form-control">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" data-dismiss="modal" class="btn btn-secondary">Close</a>
+                    <input type="submit" class="btn btn-danger" value="Delete!" form="deleteCowForm"/>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
     <script>
         $(document).ready(function () {
             $('#myModal').modal('show');
         });
+
+        function displayDeleteCowModal() {
+            cowID = document.getElementById("cowID").value;
+            document.getElementById("deleteCow-ID").value = cowID;
+
+            breed = document.getElementById("breed").value;
+            document.getElementById("deleteCow-Breed").value = breed;
+
+            dob = document.getElementById("dob").value;
+            document.getElementById("deleteCow-DOB").value = dob;
+
+            $(document).ready(function () {
+                $('#deleteCowModal').modal('show');
+            });
+        }
+
         function saveWeightsEdited() {
             document.getElementById("editWeightsForm").submit();
         }

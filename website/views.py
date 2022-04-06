@@ -8,7 +8,7 @@ import torch
 from dateutil. relativedelta import relativedelta
 from datetime import date, timedelta
 from siameseNetwork import SiameseNetwork
-from .models import createCow, createProcedure, deleteCowProcedure, deleteCowWeight, editCow, editCowWeights, editProcedures, findCow, insertWeight, returnProcedures, returnWeights, returnWeightsFromHerd
+from .models import createCow, createProcedure, deleteCowFromDB, deleteCowProcedure, deleteCowWeight, deleteUserFromDB, editCow, editCowWeights, editProcedures, findCow, findCowWithCowID, findUser, findUserForSaving, findUserWithHerd, findUserWithHerdForSaving, insertWeight, returnProcedures, returnWeights, returnWeightsFromHerd, updateUserInDB
 import os
 import torch.optim as optim
 import torchvision.transforms as transforms
@@ -30,17 +30,9 @@ def home():
 		print(cowID)
 		if len(total) != 0:
 			for cow in total:
-					data.append([cow[0], cow[1], cow[2], cow[4], cow[5]])
+				data.append([cow[0], cow[1], cow[2], cow[4], cow[5]])
 			df = pd.DataFrame(data, columns = ['CowID', 'Breed', 'Date of Birth', 'Herd Number', 'Registered Date'])
-			#Returning Bar Chart based on number of breeds in herd
-			df['Breed'].value_counts().plot(kind="bar")
-			plt.xlabel("Breed", labelpad=14)
-			plt.ylabel("Count of Breed", labelpad=14)
-			plt.title("Number of Cows in Herd Per Breed", y=1.02)
-
-			plt.savefig("website\static\PerBreed.png")
-			plt.clf()
-			#Returning Line Chart of Each cows weight
+			#Returning Line Chart of specific cow weight
 			data = []
 			herdWeights = returnWeightsFromHerd(session['herdNumber'])
 			print(herdWeights)
@@ -53,10 +45,12 @@ def home():
 			plt.xlabel("Weigh Dates", labelpad=14)
 			plt.ylabel("Weight", labelpad=14)
 			plt.title("Weight of "+str(cowID), y=1.02)
-			plt.savefig("website\static\SpecificWeight.png")
+
+			savePath = os.path.join('website/static', 'SpecificWeight.png')
+			plt.savefig(savePath)
 			plt.clf()
 
-		return render_template("home.html", cows=df['CowID'], showWeight=True, showPerBreed=True)
+		return render_template("home.html", cows=weightDF['CowID'].unique(), showWeight=True, showPerBreed=True, showPastYear=True)
 	
 	elif 'username' in session:
 		total = findCow(session['herdNumber'])
@@ -70,29 +64,74 @@ def home():
 			plt.ylabel("Count of Breed", labelpad=14)
 			plt.title("Number of Cows in Herd Per Breed", y=1.02)
 
-			plt.savefig("website\static\PerBreed.png")
+			savePath = os.path.join('website/static', 'PerBreed.png')
+			plt.savefig(savePath)
 			plt.clf()
-		for i in range(365, -1, -1):
-			retrieveDate = date.today() - timedelta(days=i)
-			totalNumber = len(df[df['Registered Date'] <= retrieveDate])
-			totalCows['Date'].append(str(retrieveDate.strftime('%d/%m/%y')))
-			totalCows["Total Number of Cows"].append(totalNumber)
-		totalCowsDF = pd.DataFrame(totalCows)
-		totalCowsDF['Date'] = pd.to_datetime(totalCowsDF['Date'])
-		monthlyTotalCowsDF = totalCowsDF.resample('M', on='Date').max()
-		lastYearDate = date.today() - relativedelta(years=1)
-		mask = (monthlyTotalCowsDF['Date'].dt.date > lastYearDate) & (monthlyTotalCowsDF['Date'].dt.date <= date.today())
-		pastYearTotalCowsDf = monthlyTotalCowsDF[mask]
-		pastYearTotalCowsDf.plot(x="Date", y="Total Number of Cows")
-		plt.title('Max Total Number of Cows Per Month (Last 365 Days) ', fontsize=14)
-		plt.xlabel('Date', fontsize=14)
-		plt.ylabel('Total Number of Cows', fontsize=14)
-		plt.grid(True)
-		plt.savefig("website\static\PastYear.png")
-		return render_template("home.html", cows=df['CowID'], showPerBreed=True, showPastYear=True)
+
+			herdWeights = returnWeightsFromHerd(session['herdNumber'])
+			data = []
+			print(herdWeights)
+			for weight in herdWeights:
+				data.append([weight[3], weight[1], weight[2]])
+			weightDF = pd.DataFrame(data, columns=["CowID", "Weight", "Date Weighed"])
+
+			for i in range(365, -1, -1):
+				retrieveDate = date.today() - timedelta(days=i)
+				totalNumber = len(df[df['Registered Date'] <= retrieveDate])
+				totalCows['Date'].append(str(retrieveDate.strftime('%d/%m/%y')))
+				totalCows["Total Number of Cows"].append(totalNumber)
+			totalCowsDF = pd.DataFrame(totalCows)
+			totalCowsDF['Date'] = pd.to_datetime(totalCowsDF['Date'])
+			monthlyTotalCowsDF = totalCowsDF.resample('M', on='Date').max()
+			lastYearDate = date.today() - relativedelta(years=1)
+			mask = (monthlyTotalCowsDF['Date'].dt.date > lastYearDate) & (monthlyTotalCowsDF['Date'].dt.date <= date.today())
+			pastYearTotalCowsDf = monthlyTotalCowsDF[mask]
+			pastYearTotalCowsDf.plot(x="Date", y="Total Number of Cows")
+			plt.title('Max Total Number of Cows Per Month (Last 365 Days) ', fontsize=14)
+			plt.xlabel('Date', fontsize=14)
+			plt.ylabel('Total Number of Cows', fontsize=14)
+			plt.grid(True)
+			savePath = os.path.join('website/static', 'PastYear.png')
+			plt.savefig(savePath)
+			plt.clf()
+			return render_template("home.html", cows=weightDF['CowID'].unique(), showPerBreed=True, showPastYear=True)
+
+		else:
+			return render_template("home.html")
 	else:
 		return redirect(url_for('auth.login'))
 
+@views.route("/account", methods=["GET","POST"])
+def account():
+	return render_template("account.html", userID=session['user_id'], herdNo=session['herdNumber'], name=session['name'], email=session['username'])
+
+@views.route("/saveAccount", methods=["GET","POST"])
+def saveChangesToAccount():
+	if request.method == 'POST':
+		userID = request.form.get("user_id")
+		herdNumber = request.form.get("herdNumber")
+		name = request.form.get("name")
+		email = request.form.get("email")
+		
+		user = findUserForSaving(userID, email)
+		herd = findUserWithHerdForSaving(userID, herdNumber)
+
+		if user:
+			flash("Email already exists", category='error')
+		elif herd:
+			flash("Herd Number already exists", category='error')
+		else:
+			updateUserInDB(herdNumber, name, email, userID)
+			flash("Account Changes Saved!", category="success")
+			return redirect(url_for('auth.logout'))
+	return render_template("account.html", userID=session['user_id'], herdNo=session['herdNumber'], name=session['name'], email=session['username'])
+@views.route('/deleteAccount', methods=["GET","POST"])
+def deleteAccount():
+	if request.method == 'POST':
+		herdNo = request.form.get("deleteAccount-HerdNo")
+		deleteUserFromDB(herdNo)
+		return redirect(url_for('auth.sign_up'))
+		
 @views.route('/create')
 def create():
 	return render_template("create.html")
@@ -139,23 +178,28 @@ def register():
 		cowID = request.form.get('cowID')
 		breed = request.form.get('breed')
 		dob = request.form.get("dob")
-		session['cowID'] = cowID
-		file = request.files['img']
-		filename = secure_filename(file.filename)
-		savePath = os.path.join('website/uploadImages', filename)
-		file.save(savePath)
-		model = keras.models.load_model("custom-CNN.h5")
-		prediction = model.predict([prepare(savePath)])
-		print(prediction)
-		if prediction[0][0] == 1.0:
-			flash("Cow Picture Detected", category='success')
-			createCow(cowID, breed, dob, convert_data(savePath), session["herdNumber"], today.strftime("%Y/%m/%d"))
-			os.remove(savePath)
-			return render_template("medicalProcedures.html")
-		else:
-			flash("No Cow Detected, try again.", category='error')
-			os.remove(savePath)
+		cow = findCowWithCowID(cowID)
+		if cow:
+			flash("CowID already exists", category='error')
 			return render_template("create.html", valueCowID=cowID, valueBreed=breed, valueDOB=dob)
+		else:
+			session['cowID'] = cowID
+			file = request.files['img']
+			filename = secure_filename(file.filename)
+			savePath = os.path.join('website/uploadImages', filename)
+			file.save(savePath)
+			model = keras.models.load_model("custom-CNN.h5")
+			prediction = model.predict([prepare(savePath)])
+			print(prediction)
+			if prediction[0][0] == 1.0:
+				flash("Cow Picture Detected", category='success')
+				createCow(cowID, breed, dob, convert_data(savePath), session["herdNumber"], today.strftime("%Y/%m/%d"))
+				os.remove(savePath)
+				return render_template("medicalProcedures.html")
+			else:
+				flash("No Cow Detected, try again.", category='error')
+				os.remove(savePath)
+				return render_template("create.html", valueCowID=cowID, valueBreed=breed, valueDOB=dob)
 	return render_template("create.html")
 
 @views.route("/scan", methods=["GET", "POST"])
@@ -175,12 +219,12 @@ def searchDatabase():
 	uploadedImage = transformation(img)
 	for cow in cowsInHerd:
 		dbImage = transformImage(cow[3])
-		load_model = SiameseNetwork().cuda()
+		load_model = SiameseNetwork().cpu()
 		load_optimizer = optim.Adam(load_model.parameters(), lr=0.0006)
 		load_checkpoint('Differentmodel.pth',load_model, load_optimizer)
 		with torch.no_grad():
 			load_model.eval()
-			output = load_model(uploadedImage[None, ...].cuda(), dbImage[None, ...].cuda())
+			output = load_model(uploadedImage[None, ...], dbImage[None, ...])
 			print(output)
 			if output.item() < 0.5:
 				nparr = np.fromstring(cow[3], np.uint8)
@@ -188,10 +232,18 @@ def searchDatabase():
 				cv2.imwrite("website/static/dbReturned.JPG", img_np)
 				procedures = returnProcedures(str(cow[0]))
 				weights = returnWeights(str(cow[0]))
+				os.remove(savePath)
 				return render_template("scan.html", data=cow, model=True, returnedDBProcedures=procedures, returnedDBWeights=weights)	
-	flash("No cows recognised in the DB", category='error')		
+	flash("No cows recognised in the DB", category='error')	
+	os.remove(savePath)	
 	return render_template("scan.html")
 
+@views.route("/deleteCow", methods=["GET", "POST"])
+def deleteCow():
+	if request.method == 'POST':
+		cowID = request.form.get("deleteCow-ID")
+		deleteCowFromDB(cowID)
+	return "OK"
 @views.route("/saveEditWeights", methods=["GET","POST"])
 def saveEditedWeights():
 	if request.method == 'POST':
@@ -279,7 +331,7 @@ def transformImage(imgArray):
 
 def load_checkpoint(path,model, optimizer):
 	save_path = path
-	state_dict = torch.load(save_path)
+	state_dict = torch.load(save_path, map_location=torch.device('cpu'))
 	model.load_state_dict(state_dict['model_state_dict'])
 	optimizer.load_state_dict(state_dict['optimizer_state_dict'])
 	val_loss = state_dict['val_loss']

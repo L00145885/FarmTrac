@@ -10,11 +10,14 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
 
-        user = findUser(email)
+        user = findUser(str(email))
         if user:
             if check_password_hash(user[-1], password):
-                session['username'] = user[0]
+                session['user_id'] = user[0]
+                session['username'] = user[3]
                 session['herdNumber'] = user[1]
+                session['name'] = user[2]
+                print(session)
                 flash("Logged In Successfully", category='success')
                 return redirect(url_for('views.home'))
             else:
@@ -30,6 +33,11 @@ def logout():
 
 @auth.route('/sign-up', methods=["GET", "POST"])
 def sign_up():
+    herdNumber = ''
+    name = ''
+    email = ''
+    password1 = ''
+    password2 = ''
     if request.method == "POST":
         herdNumber = request.form.get('herdNumber')
         name = request.form.get('name')
@@ -57,4 +65,4 @@ def sign_up():
             createUser(herdNumber,name,email,passIn=generate_password_hash(password1, method="sha256"))
             flash("Account Created!", category="success")
             return redirect('/')
-    return render_template("sign_up.html")
+    return render_template("sign_up.html", valueHerdNo=herdNumber, valueName=name, valueEmail=email, valuePass1=password1, valuePass2=password2)

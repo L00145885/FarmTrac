@@ -13,16 +13,16 @@ db = mysql.connector.connect(
         password='enTiNoNv#9447',
         database='FarmTrac')
 cur = db.cursor()
-cur.execute("CREATE TABLE IF NOT EXISTS users (herdNumber VARCHAR(15) PRIMARY KEY, fullName VARCHAR(40), email VARCHAR(50) unique, password VARCHAR(120))")
+cur.execute("CREATE TABLE IF NOT EXISTS users (userID INT(5) AUTO_INCREMENT, herdNumber VARCHAR(15) PRIMARY KEY, fullName VARCHAR(40), email VARCHAR(50) unique, password VARCHAR(120), INDEX(userID))")
 db.commit()
 
-cur.execute("CREATE TABLE IF NOT EXISTS cows (cowID INT(15) PRIMARY KEY, breed VARCHAR(15), dob DATE, img BLOB, herdNumber VARCHAR(15), registeredDate DATE, FOREIGN KEY(herdNumber) REFERENCES users(herdNumber))")
+cur.execute("CREATE TABLE IF NOT EXISTS cows (cowID INT(15) PRIMARY KEY, breed VARCHAR(15), dob DATE, img BLOB, herdNumber VARCHAR(15), registeredDate DATE, FOREIGN KEY(herdNumber) REFERENCES users(herdNumber) ON DELETE CASCADE)")
 db.commit()
 
-cur.execute("CREATE TABLE IF NOT EXISTS procedures (procedureID INT(5) PRIMARY KEY AUTO_INCREMENT , type VARCHAR(15), description VARCHAR (45), dateCompleted DATE, cowID INT(15), FOREIGN KEY(cowID) REFERENCES cows(cowID))")
+cur.execute("CREATE TABLE IF NOT EXISTS procedures (procedureID INT(5) PRIMARY KEY AUTO_INCREMENT , type VARCHAR(15), description VARCHAR (45), dateCompleted DATE, cowID INT(15), FOREIGN KEY(cowID) REFERENCES cows(cowID) ON DELETE CASCADE)")
 db.commit()
 
-cur.execute("CREATE TABLE IF NOT EXISTS weights (weightID INT(5) PRIMARY KEY AUTO_INCREMENT , weight INT(5), dateCompleted DATE, cowID INT(15), herdNumber VARCHAR (15), FOREIGN KEY(cowID) REFERENCES cows(cowID), FOREIGN KEY(herdNumber) REFERENCES users(herdNumber))")
+cur.execute("CREATE TABLE IF NOT EXISTS weights (weightID INT(5) PRIMARY KEY AUTO_INCREMENT , weight INT(5), dateCompleted DATE, cowID INT(15), herdNumber VARCHAR (15), FOREIGN KEY(cowID) REFERENCES cows(cowID) ON DELETE CASCADE, FOREIGN KEY(herdNumber) REFERENCES users(herdNumber) ON DELETE CASCADE)")
 db.commit() 
 
 def createUser(herdNumberIn, fullNameIn, emailIn, passIn):
@@ -30,17 +30,42 @@ def createUser(herdNumberIn, fullNameIn, emailIn, passIn):
     cur.execute(sql, (herdNumberIn, fullNameIn, emailIn, passIn))
     db.commit()
 
+def deleteUserFromDB(herdNo):
+        sql = "DELETE FROM users WHERE herdNumber = %s"
+        params = (herdNo, )
+        cur.execute(sql, params)
+        db.commit()
+
+def updateUserInDB(herdNumberIn, fullNameIn, emailIn, userIDIn):
+        sql = """UPDATE users SET herdNumber=%s, fullName=%s, email=%s WHERE userID = %s"""
+        cur.execute(sql, (herdNumberIn, fullNameIn, emailIn, userIDIn))
+        db.commit()
+
 def findUser(emailIn):
-    query = "SELECT email,herdNumber, password FROM users WHERE email = '"+emailIn+"'"
+    query = "SELECT * FROM users WHERE email = '"+emailIn+"'"
     cur.execute(query)
     user = cur.fetchone()
     return user
+
+def findUserForSaving(idIn, emailIn):
+        query = "SELECT * FROM users WHERE userID != %s AND email = %s"
+        params = (idIn,emailIn)
+        cur.execute(query,params)
+        user = cur.fetchone()
+        return user
 
 def findUserWithHerd(herdIn):
     query = "SELECT * FROM users WHERE herdNumber = '"+herdIn+"'"
     cur.execute(query)
     user = cur.fetchone()
     return user
+
+def findUserWithHerdForSaving(idIn, herdIn):
+        query = "SELECT * FROM users WHERE userID != %s AND herdNumber = %s"
+        params = (idIn,herdIn)
+        cur.execute(query,params)
+        user = cur.fetchone()
+        return user
 
 def createCow(cowIDIn, breedIn, dobIn, imgIn, herdIn, dateIn):
         sql = "INSERT INTO cows (cowID, breed, dob, img, herdNumber, registeredDate) VALUES (%s, %s, %s, %s, %s, %s);"
@@ -53,9 +78,22 @@ def findCow(herdIn):
         cow = cur.fetchall()
         return cow
 
+def findCowWithCowID(cowID):
+        sql = "SELECT * FROM cows WHERE cowID = %s"
+        params = (cowID, )
+        cur.execute(sql, params)
+        cow = cur.fetchall()
+        return cow
+
 def editCow(oldCowIDIn, cowIDIn, breedIn, dobIn):
         sql = """UPDATE cows SET cowID=%s, breed=%s, dob=%s WHERE cowID = %s"""
         cur.execute(sql, (cowIDIn, breedIn, dobIn, oldCowIDIn))
+        db.commit()
+
+def deleteCowFromDB(cowID):
+        sql = "DELETE FROM cows WHERE cowID = %s"
+        params = (cowID, )
+        cur.execute(sql, params)
         db.commit()
 
 def createProcedure(dataIn):
@@ -76,7 +114,7 @@ def deleteCowProcedure(procedureID):
         db.commit()
 
 def returnProcedures(cowID):
-        query = "SELECT * FROM procedures WHERE cowID = "+cowID+""
+        query = "SELECT * FROM procedures WHERE cowID = "+cowID+" ORDER BY dateCompleted"
         cur.execute(query)
         procedures = cur.fetchall()
         return procedures
@@ -99,13 +137,13 @@ def deleteCowWeight(weightIDIn):
         db.commit()
 
 def returnWeights(cowID):
-        query = "SELECT * FROM weights WHERE cowID = "+cowID+""
+        query = "SELECT * FROM weights WHERE cowID = "+cowID+" ORDER BY dateCompleted"
         cur.execute(query)
         weights = cur.fetchall()
         return weights
 
 def returnWeightsFromHerd(herdID):
-        query = "SELECT * FROM weights WHERE herdNumber = "+herdID+""
+        query = "SELECT * FROM weights WHERE herdNumber = '"+herdID+"' ORDER BY dateCompleted"
         cur.execute(query)
         weights = cur.fetchall()
         return weights

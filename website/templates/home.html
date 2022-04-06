@@ -2,23 +2,28 @@
 {% block title %}Home{% endblock %}
 
 {% block content%}
-    <h1>This the home page</h1>
-    {% if showPerBreed %}
-        <img src="{{url_for('static',filename = 'perBreed.png')}}" height="500" width="600"/>
-    {% endif %}
-    {% if showWeight %}
-        <img src="{{url_for('static',filename = 'SpecificWeight.png')}}" height="1200" width="1400"/>
-    {% endif %}
-    {% if showPastYear %}
-        <img src="{{url_for('static',filename = 'PastYear.png')}}" height="1200" width="1400"/>
-    {% endif %}
+    {% if cows|length > 0 %}
+    <h7>Display weights for selected cow</h7>
     <form id="selectCowForm" action="/" method="post">
         <select name="selectCow" id="selectCow" onchange="sendForm()">
             {% for cow in cows %}
+                <option selected disabled>Select Cow (with weights assigned)</option>
                 <option value="{{cow}}">{{cow}}</option>
             {% endfor %}
         </select>
     </form>
+    {% else %}
+    <p>To View Data on herd - Please Register Cows to Application</p>
+    {% endif %}
+    {% if showWeight %}
+    <img src="{{url_for('static',filename = 'SpecificWeight.png')}}" height="auto" width="100%" style="align-items: center;"/>
+    {% endif %}
+    {% if showPerBreed %}
+        <img src="{{url_for('static',filename = 'PerBreed.png')}}" height="auto" width="100%" style="align-items: center;"/>
+    {% endif %}
+    {% if showPastYear %}
+        <img src="{{url_for('static',filename = 'PastYear.png')}}" height="auto" width="100%" style="align-items: center;"/>
+    {% endif %}
     <script>
         function sendForm() {
             document.getElementById("selectCowForm").submit();
