@@ -27,7 +27,7 @@ jobs:
         with:
           switches: -avzr --delete
           path: ./*
-          remote_path: ~/deployedApp
+          remote_path: ~/test
           remote_host: ec2-54-74-194-122.eu-west-1.compute.amazonaws.com
           remote_user: ubuntu
           remote_key: "${{ secrets.AWS_PRIVATE_KEY }}"
