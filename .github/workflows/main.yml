@@ -29,6 +29,7 @@ jobs:
           username: ubuntu
           key: "${{ secrets.AWS_PRIVATE_KEY }}"
           script: |
+            pkill gunicorn
             pwd
             rm -rf FarmTrac
             git clone https://github.com/L00145885/FarmTrac.git
