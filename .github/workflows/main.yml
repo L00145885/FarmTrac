@@ -38,5 +38,7 @@ jobs:
           username: ubuntu
           key: "${{ secrets.AWS_PRIVATE_KEY }}"
           script: |
+            pwd
             cd ~/deployedApp
+            pwd
             gunicorn -b 127.0.0.1:8080 wsgi &
