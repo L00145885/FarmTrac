@@ -31,5 +31,10 @@ jobs:
           remote_host: ec2-54-74-194-122.eu-west-1.compute.amazonaws.com
           remote_user: ubuntu
           remote_key: "${{ secrets.AWS_PRIVATE_KEY }}"
-      - name: rsync over ssh
-        run: ./deploy_to_aws.sh
+      - name: executing remote ssh commands using ssh key
+        uses: appleboy/ssh-action@master
+        with:
+          host: ec2-54-74-194-122.eu-west-1.compute.amazonaws.com
+          username: ubuntu
+          key: "${{ secrets.AWS_PRIVATE_KEY }}"
+          script: whoami
