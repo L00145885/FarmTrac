@@ -29,10 +29,10 @@ jobs:
           username: ubuntu
           key: "${{ secrets.AWS_PRIVATE_KEY }}"
           script: |
+            tmux kill-server
             pkill gunicorn
-            pwd
-            rm -rf FarmTrac
-            git clone https://github.com/L00145885/FarmTrac.git
-            cd FarmTrac
-            pwd
+            cd ~/FarmTrac
+            git pull
+            tmux
             gunicorn -b 127.0.0.1:8080 wsgi &
+            tmux detach
