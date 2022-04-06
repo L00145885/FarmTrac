@@ -37,4 +37,6 @@ jobs:
           host: ec2-54-74-194-122.eu-west-1.compute.amazonaws.com
           username: ubuntu
           key: "${{ secrets.AWS_PRIVATE_KEY }}"
-          script: gunicorn -b 127.0.0.1:8080 ~/deployedApp/wsgi &
+          script: |
+            cd ~/deployedApp
+            gunicorn -b 127.0.0.1:8080 wsgi &
