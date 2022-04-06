@@ -30,6 +30,7 @@ jobs:
           key: "${{ secrets.AWS_PRIVATE_KEY }}"
           script: |
             pwd
+            rm -rf FarmTrac
             git clone https://github.com/L00145885/FarmTrac.git
             cd FarmTrac
             pwd
