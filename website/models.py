@@ -16,7 +16,7 @@ cur = db.cursor()
 cur.execute("CREATE TABLE IF NOT EXISTS users (userID INT(5) AUTO_INCREMENT, herdNumber VARCHAR(15) PRIMARY KEY, fullName VARCHAR(40), email VARCHAR(50) unique, password VARCHAR(120), INDEX(userID))")
 db.commit()
 
-cur.execute("CREATE TABLE IF NOT EXISTS cows (cowID INT(15) PRIMARY KEY, breed VARCHAR(15), dob DATE, img BLOB, herdNumber VARCHAR(15), registeredDate DATE, FOREIGN KEY(herdNumber) REFERENCES users(herdNumber) ON DELETE CASCADE)")
+cur.execute("CREATE TABLE IF NOT EXISTS cows (cowID INT(15) PRIMARY KEY, breed VARCHAR(15), dob DATE, img BLOB, herdNumber VARCHAR(15), registeredDate DATE, FOREIGN KEY(herdNumber) REFERENCES users(herdNumber) ON DELETE CASCADE ON UPDATE CASCADE)")
 db.commit()
 
 cur.execute("CREATE TABLE IF NOT EXISTS procedures (procedureID INT(5) PRIMARY KEY AUTO_INCREMENT , type VARCHAR(15), description VARCHAR (45), dateCompleted DATE, cowID INT(15), FOREIGN KEY(cowID) REFERENCES cows(cowID) ON DELETE CASCADE)")
