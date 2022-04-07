@@ -28,11 +28,4 @@ jobs:
           host: ec2-34-246-248-234.eu-west-1.compute.amazonaws.com
           username: ubuntu
           key: "${{ secrets.AWS_PRIVATE_KEY }}"
-          script: |
-            tmux kill-server
-            pkill gunicorn
-            cd ~/FarmTrac
-            git pull
-            tmux
-            gunicorn -b 127.0.0.1:8080 wsgi &
-            tmux detach
+          script: bash startServer.sh
