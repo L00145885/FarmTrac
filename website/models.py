@@ -22,7 +22,7 @@ db.commit()
 cur.execute("CREATE TABLE IF NOT EXISTS procedures (procedureID INT(5) PRIMARY KEY AUTO_INCREMENT , type VARCHAR(15), description VARCHAR (45), dateCompleted DATE, cowID INT(15), FOREIGN KEY(cowID) REFERENCES cows(cowID) ON DELETE CASCADE)")
 db.commit()
 
-cur.execute("CREATE TABLE IF NOT EXISTS weights (weightID INT(5) PRIMARY KEY AUTO_INCREMENT , weight INT(5), dateCompleted DATE, cowID INT(15), herdNumber VARCHAR (15), FOREIGN KEY(cowID) REFERENCES cows(cowID) ON DELETE CASCADE, FOREIGN KEY(herdNumber) REFERENCES users(herdNumber) ON DELETE CASCADE)")
+cur.execute("CREATE TABLE IF NOT EXISTS weights (weightID INT(5) PRIMARY KEY AUTO_INCREMENT , weight INT(5), dateCompleted DATE, cowID INT(15), herdNumber VARCHAR (15), FOREIGN KEY(cowID) REFERENCES cows(cowID) ON DELETE CASCADE, FOREIGN KEY(herdNumber) REFERENCES users(herdNumber) ON DELETE CASCADE ON UPDATE CASCADE)")
 db.commit() 
 
 def createUser(herdNumberIn, fullNameIn, emailIn, passIn):
@@ -42,8 +42,9 @@ def updateUserInDB(herdNumberIn, fullNameIn, emailIn, userIDIn):
         db.commit()
 
 def findUser(emailIn):
-    query = "SELECT * FROM users WHERE email = '"+emailIn+"'"
-    cur.execute(query)
+    query = "SELECT * FROM users WHERE email = %s"
+    params = (emailIn,)
+    cur.execute(query,params)
     user = cur.fetchone()
     return user
 
@@ -55,8 +56,9 @@ def findUserForSaving(idIn, emailIn):
         return user
 
 def findUserWithHerd(herdIn):
-    query = "SELECT * FROM users WHERE herdNumber = '"+herdIn+"'"
-    cur.execute(query)
+    query = "SELECT * FROM users WHERE herdNumber = %s"
+    params = (herdIn,)
+    cur.execute(query,params)
     user = cur.fetchone()
     return user
 
@@ -73,8 +75,9 @@ def createCow(cowIDIn, breedIn, dobIn, imgIn, herdIn, dateIn):
         db.commit()
         
 def findCow(herdIn):
-        query = "SELECT * FROM cows WHERE herdNumber = '"+herdIn+"'"
-        cur.execute(query)
+        query = "SELECT * FROM cows WHERE herdNumber = %s"
+        params = (herdIn, )
+        cur.execute(query, params)
         cow = cur.fetchall()
         return cow
 
@@ -82,7 +85,7 @@ def findCowWithCowID(cowID):
         sql = "SELECT * FROM cows WHERE cowID = %s"
         params = (cowID, )
         cur.execute(sql, params)
-        cow = cur.fetchall()
+        cow = cur.fetchone()
         return cow
 
 def editCow(oldCowIDIn, cowIDIn, breedIn, dobIn):
@@ -109,13 +112,15 @@ def editProcedures(dataIn):
                 db.commit()
 
 def deleteCowProcedure(procedureID):
-        sql = "DELETE FROM procedures WHERE procedureID = "+procedureID+""
-        cur.execute(sql)
+        sql = "DELETE FROM procedures WHERE procedureID = %s"
+        params = (procedureID, )
+        cur.execute(sql, params)
         db.commit()
 
 def returnProcedures(cowID):
-        query = "SELECT * FROM procedures WHERE cowID = "+cowID+" ORDER BY dateCompleted"
-        cur.execute(query)
+        query = "SELECT * FROM procedures WHERE cowID = %s ORDER BY dateCompleted"
+        params = (cowID, )
+        cur.execute(query, params)
         procedures = cur.fetchall()
         return procedures
 
@@ -132,24 +137,21 @@ def editCowWeights(dataIn):
                 db.commit()
 
 def deleteCowWeight(weightIDIn):
-        sql = "DELETE FROM weights WHERE weightID = "+weightIDIn+""
-        cur.execute(sql)
+        sql = "DELETE FROM weights WHERE weightID = %s"
+        params = (weightIDIn, )
+        cur.execute(sql, params)
         db.commit()
 
 def returnWeights(cowID):
-        query = "SELECT * FROM weights WHERE cowID = "+cowID+" ORDER BY dateCompleted"
-        cur.execute(query)
+        query = "SELECT * FROM weights WHERE cowID = %s ORDER BY dateCompleted"
+        params = (cowID, )
+        cur.execute(query, params)
         weights = cur.fetchall()
         return weights
 
 def returnWeightsFromHerd(herdID):
-        query = "SELECT * FROM weights WHERE herdNumber = '"+herdID+"' ORDER BY dateCompleted"
-        cur.execute(query)
+        query = "SELECT * FROM weights WHERE herdNumber = %s ORDER BY dateCompleted"
+        params = (herdID, )
+        cur.execute(query, params)
         weights = cur.fetchall()
         return weights
-                
-#def totalNumberOfCows(dateIn):
-        #sql = "SELECT * FROM cows WHERE registeredDate <= '"+str(dateIn) +"';"
-        #cur.execute(sql)
-        #rows = cur.fetchall()
-        #return len(rows)

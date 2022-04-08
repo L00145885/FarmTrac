@@ -12,16 +12,15 @@
             <input type="text" class="form-control" id="cowID" name="cowID" placeholder="Enter Cow ID" required value="{{valueCowID}}">
         </div>
         <div class="form-group">
-            <label for="name">Breed:</label>
+            <label for="breed">Breed:</label>
             <select class="form-control" id="breed" name="breed">
-                <option value="Aberdeen Angus">Aberdeen Angus</option>
-                <option value="Belgian Blue">Belgian Blue</option>
-                <option value="Limousin">Limousin</option>
-                <option value="Simmental">Simmental</option>
-                <option value="Friesian">Friesian</option>
-                <option value="Hereford">Hereford</option>
-                <option value="Charolias">Charolais</option>
-                <option value="Shorthorn">Shorthorn</option>
+            {% for breed in cowBreeds %}
+                {% if breed == valueBreed %}
+                    <option selected>{{breed}}</option>
+                {% else %}
+                    <option>{{breed}}</option>
+                {% endif %}
+            {% endfor %}
             </select>
         </div>
         <div class="form-group">

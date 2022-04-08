@@ -23,7 +23,15 @@
                             </div>
                             <div class="form-group">
                                 <label for="breed">Breed:</label>
-                                <input type="text" class="form-control" id="breed" name="breed" placeholder="Enter Breed" required value="{{data[1]}}">
+                                <select class="form-control" id="breed" name="breed">
+                                {% for breed in cowBreeds %}
+                                    {% if breed == data[1] %}
+                                    <option selected>{{breed}}</option>
+                                    {% else %}
+                                    <option>{{breed}}</option>
+                                    {% endif %}
+                                {% endfor %}
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label for="dob">DOB:</label>
@@ -78,6 +86,7 @@
                         </tr>
                             {% for row in returnedDBProcedures %}
                                 <tr>
+                                    <input hidden id="editProcedure-cowID" name="editProcedure-cowID">
                                     <input type='number' id="procedureID{{ loop.index }}" name="procedureID{{ loop.index }}" value="{{row[0]}}" hidden>
                                     <td>
                                         <select id="type{{ loop.index }}" name="type{{ loop.index }}" required>
@@ -145,6 +154,7 @@
                     <form action="/deleteProcedure" method="post" id="deleteProcedureForm">
                         <div>
                             <input hidden id="deleteProcedure-ID" name="deleteProcedure-ID">
+                            <input hidden id="deleteProcedure-cowID" name="deleteProcedure-cowID">
                             <label>Type:</label>
                             <select class="form-control" id="DeleteProcedure-Type" name="DeleteProcedure-Type">
                                 <option selected value="Dosing">Dosing</option>
@@ -183,6 +193,7 @@
                           </tr>
                             {% for row in returnedDBWeights %}
                                 <tr id="row{{loop.index}}">
+                                    <input hidden id="editWeight-cowID" name="editWeight-cowID">
                                     <input type='number' id="weightID{{ loop.index }}" name="weightID{{ loop.index }}" value="{{row[0]}}" hidden>
                                     <td><input type='number' id="weight{{ loop.index }}" name="weight{{ loop.index }}" value="{{row[1]}}"> </td>
                                     <td><input type='date' id="date{{ loop.index}}" name="date{{ loop.index}}" value="{{row[2]}}"> </td>
@@ -241,6 +252,7 @@
                     <form action="/deleteWeight" method="post" id="deleteWeightForm">
                         <div>
                             <input hidden value="" id="deleteWeight-WeightID" name="weightID">
+                            <input hidden id="deleteWeight-cowID" name="deleteWeight-cowID">
                             <label for="weight">Weight:</label>
                             <input type="number" id="deleteWeight-Weight" name="Weight" class="form-control" readonly value="">
                             <label for="dateCarriedOut">Date Completed:</label>
@@ -303,10 +315,16 @@
         }
 
         function saveWeightsEdited() {
+            cowID = document.getElementById("cowID").value;
+            document.getElementById("editWeight-cowID").value = cowID;
+
             document.getElementById("editWeightsForm").submit();
         }
 
         function saveProceduresEdited(){
+            cowID = document.getElementById("cowID").value;
+            document.getElementById("editProcedure-cowID").value = cowID;
+
             document.getElementById("editProceduresForm").submit();
         }
 
@@ -333,6 +351,9 @@
         }
 
         function deleteWeight(button) {
+            cowID = document.getElementById("cowID").value;
+            document.getElementById("deleteWeight-cowID").value = cowID;
+            
             weightId = document.getElementById("weightID"+button.value).value;
             document.getElementById("deleteWeight-WeightID").value = weightId;
 
@@ -350,6 +371,9 @@
         }
 
         function deleteProcedure(button) {
+            cowID = document.getElementById("cowID").value;
+            document.getElementById("deleteProcedure-cowID").value = cowID;
+
             procedureId = document.getElementById("procedureID"+button.value).value;
             document.getElementById("deleteProcedure-ID").value = procedureId;
 

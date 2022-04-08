@@ -134,7 +134,8 @@ def deleteAccount():
 		
 @views.route('/create')
 def create():
-	return render_template("create.html")
+	breeds=["Aberdeen Angus", "Belgian Blue", "Limousin", "Simmental", "Friesian", "Hereford", "Charolais", "Shorthorn"]
+	return render_template("create.html", cowBreeds=breeds)
 
 @views.route("/medicalProcedures")
 def medicalProcedures():
@@ -174,6 +175,7 @@ def saveWeights():
 
 @views.route('/registerCow', methods=["GET", "POST"])
 def register():
+	breeds=["Aberdeen Angus", "Belgian Blue", "Limousin", "Simmental", "Friesian", "Hereford", "Charolais", "Shorthorn"]
 	if request.method == 'POST':
 		cowID = request.form.get('cowID')
 		breed = request.form.get('breed')
@@ -181,7 +183,7 @@ def register():
 		cow = findCowWithCowID(cowID)
 		if cow:
 			flash("CowID already exists", category='error')
-			return render_template("create.html", valueCowID=cowID, valueBreed=breed, valueDOB=dob)
+			return render_template("create.html", valueCowID=cowID, valueBreed=breed, valueDOB=dob,cowBreeds=breeds)
 		else:
 			session['cowID'] = cowID
 			file = request.files['img']
@@ -199,8 +201,8 @@ def register():
 			else:
 				flash("No Cow Detected, try again.", category='error')
 				os.remove(savePath)
-				return render_template("create.html", valueCowID=cowID, valueBreed=breed, valueDOB=dob)
-	return render_template("create.html")
+				return render_template("create.html", valueCowID=cowID, valueBreed=breed, valueDOB=dob,cowBreeds=breeds)
+	return render_template("create.html",cowBreeds=breeds)
 
 @views.route("/scan", methods=["GET", "POST"])
 def scan():
@@ -208,6 +210,7 @@ def scan():
 
 @views.route("/scanCow" ,methods=["GET", "POST"])
 def searchDatabase():
+	breeds=["Aberdeen Angus", "Belgian Blue", "Limousin", "Simmental", "Friesian", "Hereford", "Charolais", "Shorthorn"]
 	cowsInHerd = findCow(herdIn=session["herdNumber"])
 	file = request.files['img']
 	filename = secure_filename(file.filename)
@@ -233,7 +236,7 @@ def searchDatabase():
 				procedures = returnProcedures(str(cow[0]))
 				weights = returnWeights(str(cow[0]))
 				os.remove(savePath)
-				return render_template("scan.html", data=cow, model=True, returnedDBProcedures=procedures, returnedDBWeights=weights)	
+				return render_template("scan.html", data=cow, model=True, returnedDBProcedures=procedures, returnedDBWeights=weights, cowBreeds=breeds)	
 	flash("No cows recognised in the DB", category='error')	
 	os.remove(savePath)	
 	return render_template("scan.html")
@@ -243,22 +246,29 @@ def deleteCow():
 	if request.method == 'POST':
 		cowID = request.form.get("deleteCow-ID")
 		deleteCowFromDB(cowID)
-	return "OK"
+	return render_template("scan.html")
+
 @views.route("/saveEditWeights", methods=["GET","POST"])
 def saveEditedWeights():
+	breeds=["Aberdeen Angus", "Belgian Blue", "Limousin", "Simmental", "Friesian", "Hereford", "Charolais", "Shorthorn"]
 	if request.method == 'POST':
 		data = []
 		numberOfRows = int(len(request.form)/3)
+		cowID = request.form.get("editWeight-cowID")
 		for i in range(numberOfRows):
 			weightID = request.form.get("weightID"+str(i+1))
 			weight = request.form.get("weight"+str(i+1))
 			date = request.form.get("date"+str(i+1))
 			data.append([weightID, weight, date])
 		editCowWeights(data)
-		return "OK"
+		cow = findCowWithCowID(cowID)
+		procedures = returnProcedures(str(cow[0]))
+		weights = returnWeights(str(cow[0]))
+		return render_template("scan.html", data=cow, model=True, returnedDBProcedures=procedures, returnedDBWeights=weights, cowBreeds=breeds)	
 
 @views.route("/insertNewWeight", methods=["GET","POST"])
 def insertNewWeight():
+	breeds=["Aberdeen Angus", "Belgian Blue", "Limousin", "Simmental", "Friesian", "Hereford", "Charolais", "Shorthorn"]
 	if request.method == 'POST':
 		data = []
 		print(request.form)
@@ -268,20 +278,30 @@ def insertNewWeight():
 		herdNumber = request.form.get("insertWeight-HerdNumber")
 	data.append([weight, date, cowID, herdNumber])
 	insertWeight(data)
-	return "OK"
+	cow = findCowWithCowID(cowID)
+	procedures = returnProcedures(str(cow[0]))
+	weights = returnWeights(str(cow[0]))
+	return render_template("scan.html", data=cow, model=True, returnedDBProcedures=procedures, returnedDBWeights=weights, cowBreeds=breeds)		
 
 @views.route("/deleteWeight", methods=["GET","POST"])
 def deleteWeight():
+	breeds=["Aberdeen Angus", "Belgian Blue", "Limousin", "Simmental", "Friesian", "Hereford", "Charolais", "Shorthorn"]
 	if request.method == 'POST':
+		cowID = request.form.get('deleteWeight-cowID')	
 		weightID = request.form.get('weightID')
 	deleteCowWeight(weightID)
-	return "OK"
+	cow = findCowWithCowID(cowID)
+	procedures = returnProcedures(str(cow[0]))
+	weights = returnWeights(str(cow[0]))
+	return render_template("scan.html", data=cow, model=True, returnedDBProcedures=procedures, returnedDBWeights=weights, cowBreeds=breeds)	
 
 @views.route("saveEditProcedures", methods=["GET","POST"])
 def saveEditedProcedures():
+	breeds=["Aberdeen Angus", "Belgian Blue", "Limousin", "Simmental", "Friesian", "Hereford", "Charolais", "Shorthorn"]
 	if request.method == 'POST':
 		data = []
 		numberOfRows = int(len(request.form)/4)
+		cowID = request.form.get("editProcedure-cowID")
 		for i in range(numberOfRows):
 			procedureID = request.form.get("procedureID"+str(i+1))
 			type = request.form.get("type"+str(i+1))
@@ -289,10 +309,14 @@ def saveEditedProcedures():
 			date = request.form.get("date"+str(i+1))
 			data.append([procedureID, type, description, date])
 		editProcedures(data)
-		return "OK"
+		cow = findCowWithCowID(cowID)
+		procedures = returnProcedures(str(cow[0]))
+		weights = returnWeights(str(cow[0]))
+		return render_template("scan.html", data=cow, model=True, returnedDBProcedures=procedures, returnedDBWeights=weights, cowBreeds=breeds)	
 
 @views.route("/insertNewProcedure", methods=["GET","POST"])
 def insertNewProcedure():
+	breeds=["Aberdeen Angus", "Belgian Blue", "Limousin", "Simmental", "Friesian", "Hereford", "Charolais", "Shorthorn"]
 	if request.method == 'POST':
 		data = []
 		type = request.form.get("Type1")
@@ -301,14 +325,22 @@ def insertNewProcedure():
 		cowID = request.form.get("insertProcedure-CowID")
 	data.append([desc, date, type, cowID])
 	createProcedure(data)
-	return "OK"
+	cow = findCowWithCowID(cowID)
+	procedures = returnProcedures(str(cow[0]))
+	weights = returnWeights(str(cow[0]))
+	return render_template("scan.html", data=cow, model=True, returnedDBProcedures=procedures, returnedDBWeights=weights, cowBreeds=breeds)	
 
 @views.route("/deleteProcedure", methods=["GET","POST"])
 def deleteProcedure():
+	breeds=["Aberdeen Angus", "Belgian Blue", "Limousin", "Simmental", "Friesian", "Hereford", "Charolais", "Shorthorn"]
 	if request.method == 'POST':
+		cowID = request.form.get('deleteProcedure-cowID')	
 		procedureID = request.form.get('deleteProcedure-ID')
 	deleteCowProcedure(procedureID)
-	return "OK"
+	cow = findCowWithCowID(cowID)
+	procedures = returnProcedures(str(cow[0]))
+	weights = returnWeights(str(cow[0]))
+	return render_template("scan.html", data=cow, model=True, returnedDBProcedures=procedures, returnedDBWeights=weights, cowBreeds=breeds)	
 
 @views.route('/editCow', methods=["GET", "POST"])
 def edit():
