@@ -6,8 +6,8 @@
     <h7>Display weights for selected cow</h7>
     <form id="selectCowForm" action="/" method="post">
         <select name="selectCow" id="selectCow" onchange="sendForm()">
+            <option selected disabled>Select Cow (with weights assigned)</option>
             {% for cow in cows %}
-                <option selected disabled>Select Cow (with weights assigned)</option>
                 <option value="{{cow}}">{{cow}}</option>
             {% endfor %}
         </select>
